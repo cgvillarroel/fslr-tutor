@@ -150,7 +150,6 @@ def preprocessRange(start, stop):
         gesture = Gesture()
         clip_count = len(next(os.walk(f"{clips_path}/{gesture_idx}"))[2])
         for clip_idx in range(clip_count):
-            print(f"Processing gesture {gesture_idx}, clip {clip_idx}    ", end="\r")
             result = extractLandmarks(f"{clips_path}/{gesture_idx}/{clip_idx}.MOV")
             normalized_result = normalizeResults(result)
             gesture.clips.append(normalized_result)
@@ -163,8 +162,10 @@ def preprocessRange(start, stop):
 import threading
 
 threads = []
-for idx in range(21):
-    threads.append(threading.Thread(target=preprocessRange, args=(idx*5, idx*5 + 5)))
+for idx in range(10):
+    threads.append(threading.Thread(target=preprocessRange, args=(idx * 10, idx * 10 + 10)))
+
+threads.append(threading.Thread(target=preprocessRange,args=(100,105)))
 
 for thread in threads:
     thread.start()
