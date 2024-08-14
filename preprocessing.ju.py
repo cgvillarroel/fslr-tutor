@@ -105,25 +105,29 @@ def normalizeResults(results):
 
         normalized_landmarks = Frame()
 
-        for landmark in result.pose_landmarks.landmark:
-            normalized_x = (landmark.x - min_x) / (max_x - min_x)
-            normalized_y = (landmark.y - min_y) / (max_y - min_y)
-            normalized_landmarks.pose_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
+        if result.pose_landmarks is not None:
+            for landmark in result.pose_landmarks.landmark:
+                normalized_x = (landmark.x - min_x) / (max_x - min_x)
+                normalized_y = (landmark.y - min_y) / (max_y - min_y)
+                normalized_landmarks.pose_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
 
-        for landmark in result.face_landmarks.landmark:
-            normalized_x = (landmark.x - min_x) / (max_x - min_x)
-            normalized_y = (landmark.y - min_y) / (max_y - min_y)
-            normalized_landmarks.face_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
+        if result.face_landmarks is not None:
+            for landmark in result.face_landmarks.landmark:
+                normalized_x = (landmark.x - min_x) / (max_x - min_x)
+                normalized_y = (landmark.y - min_y) / (max_y - min_y)
+                normalized_landmarks.face_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
 
-        for landmark in result.left_hand_landmarks.landmark:
-            normalized_x = (landmark.x - min_x) / (max_x - min_x)
-            normalized_y = (landmark.y - min_y) / (max_y - min_y)
-            normalized_landmarks.left_hand_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
+        if result.left_hand_landmarks is not None:
+            for landmark in result.left_hand_landmarks.landmark:
+                normalized_x = (landmark.x - min_x) / (max_x - min_x)
+                normalized_y = (landmark.y - min_y) / (max_y - min_y)
+                normalized_landmarks.left_hand_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
 
-        for landmark in result.right_hand_landmarks.landmark:
-            normalized_x = (landmark.x - min_x) / (max_x - min_x)
-            normalized_y = (landmark.y - min_y) / (max_y - min_y)
-            normalized_landmarks.right_hand_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
+        if result.right_hand_landmarks is not None:
+            for landmark in result.right_hand_landmarks.landmark:
+                normalized_x = (landmark.x - min_x) / (max_x - min_x)
+                normalized_y = (landmark.y - min_y) / (max_y - min_y)
+                normalized_landmarks.right_hand_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
 
         normalized_results.frames.append(normalized_landmarks)
 
@@ -161,6 +165,6 @@ with open(f"{dataset_path}/preprocessed.pkl", "wb") as writer:
 # %%
 # sample reading
 with open(f"{dataset_path}/preprocessed.pkl", "rb") as reader:
-    thing: Gesture = pickle.load(reader)
-    for landmark in thing.clips[0].frames[0].pose_landmarks:
+    loaded_gesture: Gesture = pickle.load(reader)
+    for landmark in loaded_gesture.clips[0].frames[0].pose_landmarks:
         print(f"norm x: {landmark.x:.5f}, norm y: {landmark.y:.5}, visibility: {landmark.visibility:.5f}")
