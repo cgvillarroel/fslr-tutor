@@ -145,8 +145,8 @@ dataset_path = "dataset"
 clips_path = f"{dataset_path}/scaled_clips"
 chunks_path = f"{dataset_path}/chunks"
 
-with open(f"{dataset_path}/preprocessed.pkl", "wb") as writer:
-    for gesture_idx in range(105):
+def preprocessRange(start, stop):
+    for gesture_idx in range(start, stop):
         gesture = Gesture()
         clip_count = len(next(os.walk(f"{clips_path}/{gesture_idx}"))[2])
         for clip_idx in range(clip_count):
@@ -159,8 +159,18 @@ with open(f"{dataset_path}/preprocessed.pkl", "wb") as writer:
         with open(f"{chunks_path}/{gesture_idx}.pkl", "wb") as chunk_writer:
             pickle.dump(gesture, chunk_writer)
 
-        # primary binary
-        pickle.dump(gesture, writer)
+# %%
+import threading
+
+threads = []
+for idx in range(21):
+    threads.append(threading.Thread(target=preprocessRange, args=(idx*5, idx*5 + 5)))
+
+for thread in threads:
+    thread.start()
+
+for thread in threads:
+    thread.join()
 
 # %%
 # sample reading
