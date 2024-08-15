@@ -87,51 +87,38 @@ def extractLandmarks(file_name):
 # util: normalize
 
 
-def normalizeResults(results):
-    normalized_results = Clip()
-    for result in results:
-        min_x = float("inf")
-        min_y = float("inf")
-        max_x = float("-inf")
-        max_y = float("-inf")
+def normalizeLandmarks(landmarks, normalized_landmarks):
+    min_x = float("inf")
+    min_y = float("inf")
+    max_x = float("-inf")
+    max_y = float("-inf")
 
-        landmarks = result.pose_landmarks.landmark
-
-        for landmark in landmarks:
+    if landmarks is not None:
+        for landmark in landmarks.landmark:
             min_x = landmark.x if landmark.x < min_x else min_x
             min_y = landmark.y if landmark.y < min_y else min_y
             max_x = landmark.x if landmark.x > max_x else max_x
             max_y = landmark.y if landmark.y > max_y else max_y
 
-        normalized_landmarks = Frame()
+        for landmark in landmarks.landmark:
+            normalized_x = (landmark.x - min_x) / (max_x - min_x)
+            normalized_y = (landmark.y - min_y) / (max_y - min_y)
+            normalized_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
 
-        if result.pose_landmarks is not None:
-            for landmark in result.pose_landmarks.landmark:
-                normalized_x = (landmark.x - min_x) / (max_x - min_x)
-                normalized_y = (landmark.y - min_y) / (max_y - min_y)
-                normalized_landmarks.pose_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
 
-        if result.face_landmarks is not None:
-            for landmark in result.face_landmarks.landmark:
-                normalized_x = (landmark.x - min_x) / (max_x - min_x)
-                normalized_y = (landmark.y - min_y) / (max_y - min_y)
-                normalized_landmarks.face_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
+def normalizeClip(frames):
+    normalized_clip = Clip()
+    for frame in frames:
+        normalized_frame = Frame()
 
-        if result.left_hand_landmarks is not None:
-            for landmark in result.left_hand_landmarks.landmark:
-                normalized_x = (landmark.x - min_x) / (max_x - min_x)
-                normalized_y = (landmark.y - min_y) / (max_y - min_y)
-                normalized_landmarks.left_hand_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
+        normalizeLandmarks(frame.pose_landmarks, normalized_frame.pose_landmarks)
+        normalizeLandmarks(frame.face_landmarks, normalized_frame.face_landmarks)
+        normalizeLandmarks(frame.left_hand_landmarks, normalized_frame.left_hand_landmarks)
+        normalizeLandmarks(frame.right_hand_landmarks, normalized_frame.right_hand_landmarks)
 
-        if result.right_hand_landmarks is not None:
-            for landmark in result.right_hand_landmarks.landmark:
-                normalized_x = (landmark.x - min_x) / (max_x - min_x)
-                normalized_y = (landmark.y - min_y) / (max_y - min_y)
-                normalized_landmarks.right_hand_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
+        normalized_clip.frames.append(normalized_frame)
 
-        normalized_results.frames.append(normalized_landmarks)
-
-    return normalized_results
+    return normalized_clip
 
 
 # %%
@@ -145,6 +132,7 @@ dataset_path = "dataset"
 clips_path = f"{dataset_path}/scaled_clips"
 chunks_path = f"{dataset_path}/chunks"
 
+
 def preprocessRange(start, stop):
     for gesture_idx in range(start, stop):
         gesture = Gesture()
@@ -152,12 +140,13 @@ def preprocessRange(start, stop):
         for clip_idx in range(clip_count):
             print(f"\rPreprocessing {gesture_idx}.{clip_idx}     ", end="")
             result = extractLandmarks(f"{clips_path}/{gesture_idx}/{clip_idx}.MOV")
-            normalized_result = normalizeResults(result)
+            normalized_result = normalizeClip(result)
             gesture.clips.append(normalized_result)
 
         # redundancy in case of failure
         with open(f"{chunks_path}/{gesture_idx}.pkl", "wb") as chunk_writer:
             pickle.dump(gesture, chunk_writer)
+
 
 # %%
 import threading
