@@ -163,7 +163,7 @@ for thread in threads:
 
 # %%
 # sample reading
-with open(f"{dataset_path}/preprocessed.pkl", "rb") as reader:
+with open(f"{chunks_path}/0.pkl", "rb") as reader:
     loaded_gesture: Gesture = pickle.load(reader)
     for landmark in loaded_gesture.clips[0].frames[0].pose_landmarks:
-        print(f"norm x: {landmark.x:.5f}, norm y: {landmark.y:.5}, visibility: {landmark.visibility:.5f}")
+        print(f"norm x: {landmark.x:.5f}, norm y: {landmark.y:.5f}, visibility: {landmark.visibility:.5f}")
