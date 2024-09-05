@@ -1,10 +1,16 @@
 # %%
-import numpy as np
+# Allow imports from another folder
+import os
+import sys
+module_path = os.path.abspath(os.path.join('..'))
+if module_path not in sys.path:
+    sys.path.append(module_path)
+
 
 # %%
+import numpy as np
+
 # https://github.com/kamperh/lecture_dtw_notebook/blob/main/dtw.ipynb
-
-
 def dtw(x, y, cost):
     N = x.shape[0]
     M = y.shape[0]
@@ -61,10 +67,10 @@ def dtw(x, y, cost):
 
 # %%
 from structs.functions import cosine
-from structs.types import Gesture, Frame
+from structs.types import Frame
 
 
-# will 
+# creates a cost function which indexes the correct joint
 def cost_function_generator(landmark_idx):
     def cost(frame1: Frame, frame2: Frame):
         frame1_point = frame1.pose_landmarks[landmark_idx]
@@ -75,20 +81,28 @@ def cost_function_generator(landmark_idx):
 
 
 # %%
-import pickle
+def compareMotions(clip1, clip2):
+    series1 = clip1.frames
+    series2 = clip2.frames
+    results = []
+    for i in range(11, 17):
+        results.append(dtw(np.array(series1), np.array(series2), cost_function_generator(i))[1])
 
-data: list[Gesture] = []
+    return results
 
-with open("dataset/gestures/0.pkl", "rb") as reader:
-    data.append(pickle.load(reader))
-
-with open("dataset/gestures/6.pkl", "rb") as reader:
-    data.append(pickle.load(reader))
-
-series1 = data[0].clips[0].frames
-series2 = data[1].clips[0].frames
 
 # %%
-for i in range(11, 17):
-    result = dtw(np.array(series1), np.array(series2), cost_function_generator(i))
-    print(f"{i}: {result[0]:.5f} (total), {result[1]:.5f} (normalized)")
+# Sample Usage
+if __name__ == "__main__":
+    import pickle
+
+    data = []
+
+    with open("../dataset/gestures/0.pkl", "rb") as reader:
+        data.append(pickle.load(reader))
+
+    with open("../dataset/gestures/6.pkl", "rb") as reader:
+        data.append(pickle.load(reader))
+
+    print(compareMotions(data[0].clips[0], data[0].clips[1]))
+    print(compareMotions(data[0].clips[0], data[1].clips[0]))

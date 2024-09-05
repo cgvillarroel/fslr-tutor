@@ -1,5 +1,5 @@
 **/__pycache__/*
+**/.ipynb_checkpoints/*
 .venv/*
-.ipynb_checkpoints/*
 dataset/*
 model_bundles/*

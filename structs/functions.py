@@ -1,6 +1,5 @@
 import math
 
-
 def cosine(vec1, vec2):
     vec_len = len(vec1)
     sum_of_prod = 0
@@ -12,3 +11,9 @@ def cosine(vec1, vec2):
         sum_of_square_2 += vec2[i] * vec2[i]
 
     return sum_of_prod / (math.sqrt(sum_of_square_1) * (math.sqrt(sum_of_square_2)))
+
+
+def euclideanDistance(point1, point2):
+    x = point2.x - point1.x
+    y = point2.y - point1.y
+    return math.sqrt((x ** 2) + (y ** 2))

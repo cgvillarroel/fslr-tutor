@@ -1,7 +1,7 @@
 # %%
 import cv2
 import mediapipe as mp
-from structs.types import PoseLandmark, Landmark, Frame, Clip, Gesture
+from structs.types import NormalizedLandmark, Frame, Clip, Gesture
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -104,9 +104,9 @@ def normalizeLandmarks(landmarks, normalized_landmarks, pose_mode):
             normalized_x = (landmark.x - min_x) / (max_x - min_x)
             normalized_y = (landmark.y - min_y) / (max_y - min_y)
             if pose_mode:
-                normalized_landmarks.append(PoseLandmark(normalized_x, normalized_y, landmark.visibility))
+                normalized_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
             else:
-                normalized_landmarks.append(Landmark(normalized_x, normalized_y))
+                normalized_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, 0.0))
 
 
 def normalizeClip(frames):
@@ -146,7 +146,6 @@ def preprocessRange(start, stop):
             normalized_result = normalizeClip(result)
             gesture.clips.append(normalized_result)
 
-        # redundancy in case of failure
         with open(f"{chunks_path}/{gesture_idx}.pkl", "wb") as chunk_writer:
             pickle.dump(gesture, chunk_writer)
 

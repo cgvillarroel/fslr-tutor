@@ -1,4 +1,13 @@
 # %%
+# Allow imports from another folder
+import os
+import sys
+module_path = os.path.abspath(os.path.join('..'))
+if module_path not in sys.path:
+    sys.path.append(module_path)
+
+
+# %%
 def determineBucket(hand, left_shoulder, right_shoulder):
     if hand.y < left_shoulder.y:
 
@@ -18,9 +27,8 @@ def determineBucket(hand, left_shoulder, right_shoulder):
 
     return 5
 
+
 # %%
-
-
 def trackBuckets(clip):
     left_buckets = [0] * 6
     right_buckets = [0] * 6
@@ -57,26 +65,26 @@ def trackBuckets(clip):
 
 
 # %%
-import pickle
 from structs.functions import cosine
+def compareHandLocations(clip1, clip2):
+    buckets1 = trackBuckets(clip1)
+    buckets2 = trackBuckets(clip2)
 
-data = []
+    return cosine(buckets1[0], buckets2[0]), cosine(buckets1[1], buckets2[1])
 
-with open("dataset/gestures/0.pkl", "rb") as reader:
-    data.append(pickle.load(reader))
 
-with open("dataset/gestures/6.pkl", "rb") as reader:
-    data.append(pickle.load(reader))
+# %%
+# Sample Usage
+if __name__ == "__main__":
+    import pickle
 
-buckets_a = trackBuckets(data[0].clips[0])
-buckets_b = trackBuckets(data[0].clips[1])
-buckets_c = trackBuckets(data[1].clips[0])
+    data = []
 
-print(buckets_a)
-print(buckets_b)
-print(buckets_c)
+    with open("../dataset/gestures/0.pkl", "rb") as reader:
+        data.append(pickle.load(reader))
 
-print(cosine(buckets_a[0], buckets_b[0]))
-print(cosine(buckets_a[1], buckets_b[1]))
-print(cosine(buckets_a[0], buckets_c[0]))
-print(cosine(buckets_a[1], buckets_c[1]))
+    with open("../dataset/gestures/6.pkl", "rb") as reader:
+        data.append(pickle.load(reader))
+
+    print(compareHandLocations(data[0].clips[0], data[0].clips[1]))
+    print(compareHandLocations(data[0].clips[0], data[1].clips[0]))
