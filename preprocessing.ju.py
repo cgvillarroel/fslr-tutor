@@ -1,7 +1,7 @@
 # %%
 import cv2
 import mediapipe as mp
-from structs.types import NormalizedLandmark, Frame, Clip, Gesture
+from structs.types import PoseLandmark, Landmark, Frame, Clip, Gesture
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -87,7 +87,7 @@ def extractLandmarks(file_name):
 # util: normalize
 
 
-def normalizeLandmarks(landmarks, normalized_landmarks):
+def normalizeLandmarks(landmarks, normalized_landmarks, pose_mode):
     min_x = float("inf")
     min_y = float("inf")
     max_x = float("-inf")
@@ -103,7 +103,10 @@ def normalizeLandmarks(landmarks, normalized_landmarks):
         for landmark in landmarks.landmark:
             normalized_x = (landmark.x - min_x) / (max_x - min_x)
             normalized_y = (landmark.y - min_y) / (max_y - min_y)
-            normalized_landmarks.append(NormalizedLandmark(normalized_x, normalized_y, landmark.visibility))
+            if pose_mode:
+                normalized_landmarks.append(PoseLandmark(normalized_x, normalized_y, landmark.visibility))
+            else:
+                normalized_landmarks.append(Landmark(normalized_x, normalized_y))
 
 
 def normalizeClip(frames):
@@ -111,10 +114,10 @@ def normalizeClip(frames):
     for frame in frames:
         normalized_frame = Frame()
 
-        normalizeLandmarks(frame.pose_landmarks, normalized_frame.pose_landmarks)
-        normalizeLandmarks(frame.face_landmarks, normalized_frame.face_landmarks)
-        normalizeLandmarks(frame.left_hand_landmarks, normalized_frame.left_hand_landmarks)
-        normalizeLandmarks(frame.right_hand_landmarks, normalized_frame.right_hand_landmarks)
+        normalizeLandmarks(frame.pose_landmarks, normalized_frame.pose_landmarks, True)
+        normalizeLandmarks(frame.face_landmarks, normalized_frame.face_landmarks, False)
+        normalizeLandmarks(frame.left_hand_landmarks, normalized_frame.left_hand_landmarks, False)
+        normalizeLandmarks(frame.right_hand_landmarks, normalized_frame.right_hand_landmarks, False)
 
         normalized_clip.frames.append(normalized_frame)
 
