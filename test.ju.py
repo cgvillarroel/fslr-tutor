@@ -29,7 +29,14 @@ print(f"\tleft hand : {results[0].shape_results[0]:.5f}")
 print(f"\tright hand: {results[0].shape_results[1]:.5f}")
 
 
+# %% [md]
+# # Finding thresholds
+
+# Now that we've run our dataset through the modules, now we have to actually see what values would give us the best stats
+
+
 # %%
+# given the processed results, find the stats given a threshold
 def thresholdTesterFactory(false_condition):
 
     def testThreshold(results: list[Result], threshold: float):
@@ -51,16 +58,11 @@ def thresholdTesterFactory(false_condition):
                 true_pos += 1
                 continue
 
-            false_pos +=1
+            false_pos += 1
 
         return true_pos, true_neg, false_pos, false_neg
 
     return testThreshold
-
-
-
-# %% [md]
-# # Location Threshold
 
 
 # %%
@@ -68,8 +70,9 @@ def thresholdTesterFactory(false_condition):
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plotThresholds(test_func, start, end):
-    thresholds = [i / 1000 for i in range(start, end)]
+
+def plotThresholds(test_func, start, end, scale=1000, title="Thresholds"):
+    thresholds = [i / scale for i in range(start, end)]
     accuracies = []
     precisions = []
     recalls = []
@@ -77,15 +80,18 @@ def plotThresholds(test_func, start, end):
     for threshold in thresholds:
         print(f"threshold: {threshold}  ", end="\r")
 
-        true_pos, true_neg, false_pos, false_neg =  test_func(results, threshold)
-        accuracy = (true_pos + true_neg) / (true_pos + true_neg + false_pos + false_neg)
-        precision = (true_pos) / (true_pos + false_pos)
-        recall = (true_pos) / (true_pos + true_neg)
+        true_pos, true_neg, false_pos, _ = test_func(results, threshold)
+        accuracy = (true_pos + true_neg) / len(results)
+
+        all_positive = true_pos + false_pos
+        precision = true_pos / all_positive if all_positive > 0 else 0
+
+        all_true = true_pos + true_neg
+        recall = true_pos / all_true if all_true > 0 else 0
 
         accuracies.append(accuracy)
         precisions.append(precision)
         recalls.append(recall)
-
 
     np_thresholds = np.array(thresholds)
     np_accuracies = np.array(accuracies)
@@ -96,18 +102,59 @@ def plotThresholds(test_func, start, end):
     plt.plot(np_thresholds, np_precisions, color="g", label="precision")
     plt.plot(np_thresholds, np_recalls, color="b", label="recall")
 
-    plt.title("Threshold vs Stats")
+    plt.title(title)
     plt.legend()
     plt.show()
 
 
+# %% [md]
+# ## Location
+
+
 # %%
 def locationCondition(result, threshold):
-    return result.location_results[0] < threshold or result.location_results[1]< threshold
+    return result.location_results[0] < threshold or result.location_results[1] < threshold
 
 
 test_location = thresholdTesterFactory(locationCondition)
 
 
 # %%
-plotThresholds(test_location, 825, 1000)
+plotThresholds(test_location, 825, 1000, title="Location thresholds")
+
+
+# %% [md]
+# ## Motion
+
+
+# %%
+def motionCondition(result, threshold):
+    return (result.motion_results[0] >= threshold
+            or result.motion_results[1] >= threshold
+            or result.motion_results[2] >= threshold
+            or result.motion_results[3] >= threshold
+            or result.motion_results[4] >= threshold
+            or result.motion_results[5] >= threshold)
+
+
+test_motion = thresholdTesterFactory(motionCondition)
+
+
+# %%
+plotThresholds(test_motion, 4900, 5100, 10000, title="Motion thresholds")
+
+
+# %% [md]
+# ## Shape
+
+
+# %%
+def shapeCondition(result, threshold):
+    return (result.shape_results[0] >= threshold
+            or result.shape_results[1] >= threshold)
+
+test_shape = thresholdTesterFactory(shapeCondition)
+
+
+# %%
+plotThresholds(test_shape, 0, 50000, title="Shape thresholds")
