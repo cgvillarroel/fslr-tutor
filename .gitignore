@@ -3,3 +3,4 @@
 .venv/*
 dataset/*
 model_bundles/*
+results/*

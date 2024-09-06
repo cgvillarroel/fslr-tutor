@@ -1,38 +1,26 @@
 # %%
-import importlib.util 
-
-def import_from_file(file_name, module_name):
-
-    spec = importlib.util.spec_from_file_location(
-        name=module_name,
-        location=file_name,
-    )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    return module
-
-location = import_from_file("modules/location.ju.py", "location")
-motion = import_from_file("modules/motion.ju.py", "motion")
-shape = import_from_file("modules/shape.ju.py", "shape")
-
-
-# %%
 import pickle
+from structs.types import Result
 
-data = []
+results: list[Result] = []
 
-with open("dataset/gestures/0.pkl", "rb") as reader:
-    data.append(pickle.load(reader))
+for i in range(16):
+    with open(f"results/{i}.pkl", "rb") as reader:
+        results.extend(pickle.load(reader))
 
-with open("dataset/gestures/6.pkl", "rb") as reader:
-    data.append(pickle.load(reader))
-
-print(location.compareHandLocations(data[0].clips[0], data[0].clips[1]))
-print(location.compareHandLocations(data[0].clips[0], data[1].clips[0]))
-
-print(motion.compareMotions(data[0].clips[0], data[0].clips[1]))
-print(motion.compareMotions(data[0].clips[0], data[1].clips[0]))
-
-print(shape.compareHandShapes(data[0].clips[0], data[0].clips[1]))
-print(shape.compareHandShapes(data[0].clips[0], data[1].clips[0]))
+print("==========")
+print(f"gesture {results[0].gesture1} vs gesture {results[0].gesture2}")
+print("----------")
+print("location similarity:")
+print(f"\tleft hand : {results[0].location_results[0]:.5f}")
+print(f"\tright hand: {results[0].location_results[1]:.5f}")
+print("motion error:")
+print(f"\tleft shoulder : {results[0].motion_results[0]:.5f}")
+print(f"\tright shoulder: {results[0].motion_results[1]:.5f}")
+print(f"\tleft elbow    : {results[0].motion_results[2]:.5f}")
+print(f"\tright elbow   : {results[0].motion_results[3]:.5f}")
+print(f"\tleft wrist    : {results[0].motion_results[4]:.5f}")
+print(f"\tright wrist   : {results[0].motion_results[5]:.5f}")
+print("shape error:")
+print(f"\tleft hand : {results[0].shape_results[0]:.5f}")
+print(f"\tright hand: {results[0].shape_results[1]:.5f}")
