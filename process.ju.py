@@ -47,7 +47,7 @@ def processRange(start, stop):
             result = Result(i, i)
             result.location_results = location.compareHandLocations(clip1, gestures[i].clips[j])
             result.motion_results = motion.compareMotions(clip1, gestures[i].clips[j])
-            result.shape_results = shape.compareHandShapes(clip1, gestures[i].clips[j])
+            result.shape_results = shape.compareHandShapesEuclid(clip1, gestures[i].clips[j])
             results.append(result)
 
         # incorrect results (different gestures)
@@ -55,7 +55,7 @@ def processRange(start, stop):
             result = Result(i, j)
             result.location_results = location.compareHandLocations(clip1, gestures[j].clips[0])
             result.motion_results = motion.compareMotions(clip1, gestures[j].clips[0])
-            result.shape_results = shape.compareHandShapes(clip1, gestures[j].clips[0])
+            result.shape_results = shape.compareHandShapesEuclid(clip1, gestures[j].clips[0])
             results.append(result)
 
         # incorrect results (different gestures, part 2)
@@ -63,10 +63,10 @@ def processRange(start, stop):
             result = Result(i, j)
             result.location_results = location.compareHandLocations(clip1, gestures[j].clips[0])
             result.motion_results = motion.compareMotions(clip1, gestures[j].clips[0])
-            result.shape_results = shape.compareHandShapes(clip1, gestures[j].clips[0])
+            result.shape_results = shape.compareHandShapesEuclid(clip1, gestures[j].clips[0])
             results.append(result)
 
-        with open(f"results/{i}.pkl", "wb") as writer:
+        with open(f"results/euclid/{i}.pkl", "wb") as writer:
             pickle.dump(results, writer)
 
 

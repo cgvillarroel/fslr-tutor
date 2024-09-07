@@ -6,7 +6,7 @@ from structs.types import Result
 results: list[Result] = []
 
 for i in range(16):
-    with open(f"results/{i}.pkl", "rb") as reader:
+    with open(f"results/euclid/{i}.pkl", "rb") as reader:
         results.extend(pickle.load(reader))
 
 # %%
@@ -71,7 +71,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plotThresholds(test_func, start, end, scale=1000, title="Thresholds"):
+def plotThresholds(test_func, start, end, scale=1000, title="Thresholds", results=results):
     thresholds = [i / scale for i in range(start, end)]
     accuracies = []
     precisions = []
@@ -145,7 +145,7 @@ plotThresholds(test_motion, 4900, 5100, 10000, title="Motion thresholds")
 
 
 # %% [md]
-# ## Shape
+# ## Shape (Euclidean Distance)
 
 
 # %%
@@ -158,3 +158,25 @@ test_shape = thresholdTesterFactory(shapeCondition)
 
 # %%
 plotThresholds(test_shape, 0, 50000, title="Shape thresholds")
+
+
+# %% [md]
+# ## Shape (Cosine Similarity)
+
+
+# %%
+cosine_results: list[Result] = []
+
+for i in range(16):
+    with open(f"results/cosine/{i}.pkl", "rb") as reader:
+        cosine_results.extend(pickle.load(reader))
+
+def shapeCosineCondition(result, threshold):
+    return (result.shape_results[0] < threshold
+            or result.shape_results[1] < threshold)
+
+test_shape = thresholdTesterFactory(shapeCosineCondition)
+
+
+# %%
+plotThresholds(test_shape, 800, 1000, title="Shape thresholds", results=cosine_results)
