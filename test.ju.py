@@ -180,3 +180,41 @@ test_shape = thresholdTesterFactory(shapeCosineCondition)
 
 # %%
 plotThresholds(test_shape, 800, 1000, title="Shape thresholds", results=cosine_results)
+
+
+# %% [md]
+# # Overall
+
+
+# %%
+location_threshold = 0.88
+motion_threshold = 0.50
+shape_threshold = 0.92
+
+def overallCondition(result, _):
+    return (result.location_results[0] < location_threshold
+            or result.location_results[1] < location_threshold
+            or result.motion_results[0] >= motion_threshold
+            or result.motion_results[1] >= motion_threshold
+            or result.motion_results[2] >= motion_threshold
+            or result.motion_results[3] >= motion_threshold
+            or result.motion_results[4] >= motion_threshold
+            or result.motion_results[5] >= motion_threshold
+            or result.shape_results[0] < shape_threshold
+            or result.shape_results[1] < shape_threshold)
+
+
+test_overall = thresholdTesterFactory(overallCondition)
+
+true_pos, true_neg, false_pos, _ = test_overall(cosine_results, 0.0)
+accuracy = (true_pos + true_neg) / len(results)
+
+all_positive = true_pos + false_pos
+precision = true_pos / all_positive if all_positive > 0 else 0
+
+all_true = true_pos + true_neg
+recall = true_pos / all_true if all_true > 0 else 0
+
+print(accuracy)
+print(precision)
+print(recall)
