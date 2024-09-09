@@ -17,3 +17,27 @@ def euclideanDistance(point1, point2):
     x = point2.x - point1.x
     y = point2.y - point1.y
     return math.sqrt((x ** 2) + (y ** 2))
+
+def accuracy(mat):
+    return (mat[0] + mat[1]) / sum(mat)
+
+def precision(mat):
+    all_positive = mat[0] + mat[2]
+    return mat[0] / all_positive if all_positive > 0 else 0
+
+def recall(mat):
+    all_true = mat[0] + mat[1]
+    return mat[0] / all_true if all_true > 0 else 0
+
+def f1Score(mat):
+    denominator = (2 * mat[0] + mat[2] + mat[3])
+    return (2 * mat[0]) / denominator if denominator > 0 else 0
+
+def printStats(mat):
+    print(f"TP: {mat[0]}\t FN: {mat[3]}")
+    print(f"FP: {mat[2]}\t TN: {mat[1]}\n")
+
+    print(f"Accuracy : {accuracy(mat)}")
+    print(f"Precision: {precision(mat)}")
+    print(f"Recall   : {recall(mat)}")
+    print(f"F1 Score : {f1Score(mat)}")

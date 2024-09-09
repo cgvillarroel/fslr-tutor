@@ -18,6 +18,7 @@ def import_from_file(file_name, module_name):
 location = import_from_file("modules/location.ju.py", "location")
 motion = import_from_file("modules/motion.ju.py", "motion")
 shape = import_from_file("modules/shape.ju.py", "shape")
+face = import_from_file("modules/face.ju.py", "shape")
 
 
 # %%
@@ -36,6 +37,8 @@ for i in range(16):
 # run through modules
 from structs.types import Result
 
+super_sample_scale = 1
+
 def processRange(start, stop):
     for i in range(start, stop):
         print(f"gesture {i} ", end="\r")
@@ -45,41 +48,54 @@ def processRange(start, stop):
         # correct results (same gesture, different clip)
         for j in range(1, 16):
             result = Result(i, i)
-            result.location_results = location.compareHandLocations(clip1, gestures[i].clips[j])
-            result.motion_results = motion.compareMotions(clip1, gestures[i].clips[j])
-            result.shape_results = shape.compareHandShapesEuclid(clip1, gestures[i].clips[j])
-            results.append(result)
+            clip2 = gestures[i].clips[j]
+            result.location_results = location.compareHandLocations(clip1, clip2)
+            result.motion_results = motion.compareMotions(clip1, clip2)
+            result.shape_results = shape.compareHandShapesCosine(clip1, clip2)
+            result.face_result = face.compareFacesCosine(clip1, clip2)
+            for k in range(super_sample_scale):
+                results.append(result)
 
         # incorrect results (different gestures)
         for j in range(0, i):
             result = Result(i, j)
-            result.location_results = location.compareHandLocations(clip1, gestures[j].clips[0])
-            result.motion_results = motion.compareMotions(clip1, gestures[j].clips[0])
-            result.shape_results = shape.compareHandShapesEuclid(clip1, gestures[j].clips[0])
-            results.append(result)
+            for k in range(super_sample_scale):
+                clip2 = gestures[j].clips[k]
+                result.location_results = location.compareHandLocations(clip1, clip2)
+                result.motion_results = motion.compareMotions(clip1, clip2)
+                result.shape_results = shape.compareHandShapesCosine(clip1, clip2)
+                result.face_result = face.compareFacesCosine(clip1, clip2)
+                results.append(result)
 
         # incorrect results (different gestures, part 2)
         for j in range(i + 1, 16):
             result = Result(i, j)
-            result.location_results = location.compareHandLocations(clip1, gestures[j].clips[0])
-            result.motion_results = motion.compareMotions(clip1, gestures[j].clips[0])
-            result.shape_results = shape.compareHandShapesEuclid(clip1, gestures[j].clips[0])
-            results.append(result)
+            for k in range(super_sample_scale):
+                clip2 = gestures[j].clips[k]
+                result.location_results = location.compareHandLocations(clip1, clip2)
+                result.motion_results = motion.compareMotions(clip1, clip2)
+                result.shape_results = shape.compareHandShapesCosine(clip1, clip2)
+                result.face_result = face.compareFacesCosine(clip1, clip2)
+                results.append(result)
 
-        with open(f"results/euclid/{i}.pkl", "wb") as writer:
+        with open(f"results/{i}.pkl", "wb") as writer:
             pickle.dump(results, writer)
 
 
 # %%
+processRange(0, 16)
+
+
+# %%
 # multithreading
-import threading
-
-threads = []
-for idx in range(4):
-    threads.append(threading.Thread(target=processRange, args=(idx * 4, idx * 4 + 4)))
-
-for thread in threads:
-    thread.start()
-
-for thread in threads:
-    thread.join()
+# import threading
+#
+# threads = []
+# for idx in range(8):
+#     threads.append(threading.Thread(target=processRange, args=(idx * 2, idx * 2 + 2)))
+#
+# for thread in threads:
+#     thread.start()
+#
+# for thread in threads:
+#     thread.join()

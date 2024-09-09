@@ -1,12 +1,13 @@
 # %%
 # import data
 import pickle
+import random
 from structs.types import Result
 
 results: list[Result] = []
 
 for i in range(16):
-    with open(f"results/euclid/{i}.pkl", "rb") as reader:
+    with open(f"results/{i}.pkl", "rb") as reader:
         results.extend(pickle.load(reader))
 
 # %%
@@ -60,7 +61,7 @@ def thresholdTesterFactory(false_condition):
 
             false_pos += 1
 
-        return true_pos, true_neg, false_pos, false_neg
+        return [true_pos, true_neg, false_pos, false_neg]
 
     return testThreshold
 
@@ -69,6 +70,7 @@ def thresholdTesterFactory(false_condition):
 # find optimal threshold
 import matplotlib.pyplot as plt
 import numpy as np
+import structs.functions as utils
 
 
 def plotThresholds(test_func, start, end, scale=1000, title="Thresholds", results=results):
@@ -76,31 +78,32 @@ def plotThresholds(test_func, start, end, scale=1000, title="Thresholds", result
     accuracies = []
     precisions = []
     recalls = []
+    f1_scores = []
 
     for threshold in thresholds:
         print(f"threshold: {threshold}  ", end="\r")
 
-        true_pos, true_neg, false_pos, _ = test_func(results, threshold)
-        accuracy = (true_pos + true_neg) / len(results)
-
-        all_positive = true_pos + false_pos
-        precision = true_pos / all_positive if all_positive > 0 else 0
-
-        all_true = true_pos + true_neg
-        recall = true_pos / all_true if all_true > 0 else 0
+        confusion_matrix = test_func(results, threshold)
+        accuracy = utils.accuracy(confusion_matrix)
+        precision = utils.precision(confusion_matrix)
+        recall = utils.recall(confusion_matrix)
+        f1_score = utils.f1Score(confusion_matrix)
 
         accuracies.append(accuracy)
         precisions.append(precision)
         recalls.append(recall)
+        f1_scores.append(f1_score)
 
     np_thresholds = np.array(thresholds)
     np_accuracies = np.array(accuracies)
     np_precisions = np.array(precisions)
     np_recalls = np.array(recalls)
+    np_f1_scores = np.array(f1_scores)
 
     plt.plot(np_thresholds, np_accuracies, color="r", label="accuracy")
     plt.plot(np_thresholds, np_precisions, color="g", label="precision")
     plt.plot(np_thresholds, np_recalls, color="b", label="recall")
+    plt.plot(np_thresholds, np_f1_scores, color="y", label="f1 score")
 
     plt.title(title)
     plt.legend()
@@ -129,12 +132,12 @@ plotThresholds(test_location, 825, 1000, title="Location thresholds")
 
 # %%
 def motionCondition(result, threshold):
-    return (result.motion_results[0] >= threshold
-            or result.motion_results[1] >= threshold
-            or result.motion_results[2] >= threshold
-            or result.motion_results[3] >= threshold
-            or result.motion_results[4] >= threshold
-            or result.motion_results[5] >= threshold)
+    return (result.motion_results[0] > threshold
+            or result.motion_results[1] > threshold
+            or result.motion_results[2] > threshold
+            or result.motion_results[3] > threshold
+            or result.motion_results[4] > threshold
+            or result.motion_results[5] > threshold)
 
 
 test_motion = thresholdTesterFactory(motionCondition)
@@ -145,32 +148,10 @@ plotThresholds(test_motion, 4900, 5100, 10000, title="Motion thresholds")
 
 
 # %% [md]
-# ## Shape (Euclidean Distance)
-
-
-# %%
-def shapeCondition(result, threshold):
-    return (result.shape_results[0] >= threshold
-            or result.shape_results[1] >= threshold)
-
-test_shape = thresholdTesterFactory(shapeCondition)
-
-
-# %%
-plotThresholds(test_shape, 0, 50000, title="Shape thresholds")
-
-
-# %% [md]
 # ## Shape (Cosine Similarity)
 
 
 # %%
-cosine_results: list[Result] = []
-
-for i in range(16):
-    with open(f"results/cosine/{i}.pkl", "rb") as reader:
-        cosine_results.extend(pickle.load(reader))
-
 def shapeCosineCondition(result, threshold):
     return (result.shape_results[0] < threshold
             or result.shape_results[1] < threshold)
@@ -179,42 +160,148 @@ test_shape = thresholdTesterFactory(shapeCosineCondition)
 
 
 # %%
-plotThresholds(test_shape, 800, 1000, title="Shape thresholds", results=cosine_results)
+plotThresholds(test_shape, 800, 1000, title="Shape thresholds")
 
 
 # %% [md]
-# # Overall
+# ## Face (Cosine Similarity)
 
 
 # %%
-location_threshold = 0.88
+def faceCosineCondition(result, threshold):
+    return (result.face_result < threshold
+            or result.face_result < threshold)
+
+test_face = thresholdTesterFactory(faceCosineCondition)
+
+
+# %%
+plotThresholds(test_face, 9900, 10000, 10000, title="Face thresholds")
+
+
+# %% [md]
+# # Overall (Without Face)
+
+
+# %%
+location_threshold = 0.975
 motion_threshold = 0.50
 shape_threshold = 0.92
 
 def overallCondition(result, _):
     return (result.location_results[0] < location_threshold
             or result.location_results[1] < location_threshold
-            or result.motion_results[0] >= motion_threshold
-            or result.motion_results[1] >= motion_threshold
-            or result.motion_results[2] >= motion_threshold
-            or result.motion_results[3] >= motion_threshold
-            or result.motion_results[4] >= motion_threshold
-            or result.motion_results[5] >= motion_threshold
+            or result.motion_results[0] > motion_threshold
+            or result.motion_results[1] > motion_threshold
+            or result.motion_results[2] > motion_threshold
+            or result.motion_results[3] > motion_threshold
+            or result.motion_results[4] > motion_threshold
+            or result.motion_results[5] > motion_threshold
             or result.shape_results[0] < shape_threshold
             or result.shape_results[1] < shape_threshold)
 
 
 test_overall = thresholdTesterFactory(overallCondition)
 
-true_pos, true_neg, false_pos, _ = test_overall(cosine_results, 0.0)
-accuracy = (true_pos + true_neg) / len(results)
+confusion_matrix = test_overall(results, 0.0)
+utils.printStats(confusion_matrix)
 
-all_positive = true_pos + false_pos
-precision = true_pos / all_positive if all_positive > 0 else 0
+# %% [md]
+# # Demo (Without Face)
 
-all_true = true_pos + true_neg
-recall = true_pos / all_true if all_true > 0 else 0
 
-print(accuracy)
-print(precision)
-print(recall)
+# %%
+def testResult(result):
+    if (result.location_results[0] < location_threshold
+            or result.location_results[1] < location_threshold):
+        print("Prediction: Incorrect location")
+        return
+
+    if (result.motion_results[0] > motion_threshold
+            or result.motion_results[1] > motion_threshold
+            or result.motion_results[2] > motion_threshold
+            or result.motion_results[3] > motion_threshold
+            or result.motion_results[4] > motion_threshold
+            or result.motion_results[5] > motion_threshold):
+        print("Prediction: Incorrect motion")
+        return
+
+    if (result.shape_results[0] < shape_threshold
+            or result.shape_results[1] < shape_threshold):
+        print("Prediction: Incorrect shape")
+        return
+
+    print("Correct gesture")
+
+
+# %%
+result = results[random.randrange(0, len(results))]
+testResult(result)
+print(f"Actual    : {'Correct' if result.gesture1 == result.gesture2 else 'Incorrect'}")
+
+
+# %% [md]
+# # Overall (With Face)
+
+
+# %%
+location_threshold = 0.975
+motion_threshold = 0.50
+shape_threshold = 0.92
+face_threshold = 0.998
+
+def overallConditionWithFace(result, _):
+    return (result.location_results[0] < location_threshold
+            or result.location_results[1] < location_threshold
+            or result.motion_results[0] > motion_threshold
+            or result.motion_results[1] > motion_threshold
+            or result.motion_results[2] > motion_threshold
+            or result.motion_results[3] > motion_threshold
+            or result.motion_results[4] > motion_threshold
+            or result.motion_results[5] > motion_threshold
+            or result.shape_results[0] < shape_threshold
+            or result.shape_results[1] < shape_threshold
+            or result.face_result < face_threshold)
+
+
+test_overall = thresholdTesterFactory(overallConditionWithFace)
+
+confusion_matrix = test_overall(results, 0.0)
+utils.printStats(confusion_matrix)
+
+# %% [md]
+# # Demo (With Face)
+
+
+# %%
+def testResultWithFace(result):
+    if (result.location_results[0] < location_threshold
+            or result.location_results[1] < location_threshold):
+        print("Prediction: Incorrect location")
+        return
+
+    if (result.motion_results[0] > motion_threshold
+            or result.motion_results[1] > motion_threshold
+            or result.motion_results[2] > motion_threshold
+            or result.motion_results[3] > motion_threshold
+            or result.motion_results[4] > motion_threshold
+            or result.motion_results[5] > motion_threshold):
+        print("Prediction: Incorrect motion")
+        return
+
+    if (result.shape_results[0] < shape_threshold
+            or result.shape_results[1] < shape_threshold):
+        print("Prediction: Incorrect shape")
+        return
+
+    if (result.face_result < face_threshold):
+        print("Prediction: Incorrect face")
+        return
+
+    print("Correct gesture")
+
+
+# %%
+result = results[random.randrange(0, len(results))]
+testResultWithFace(result)
+print(f"Actual    : {'Correct' if result.gesture1 == result.gesture2 else 'Incorrect'}")

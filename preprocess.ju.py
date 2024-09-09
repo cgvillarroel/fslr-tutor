@@ -94,7 +94,8 @@ def normalizeLandmarks(landmarks, normalized_landmarks, pose_mode):
     max_y = float("-inf")
 
     if landmarks is not None:
-        for landmark in landmarks.landmark:
+        landmarks1 = landmarks.landmark[:23] # exclude legs
+        for landmark in landmarks1:
             min_x = landmark.x if landmark.x < min_x else min_x
             min_y = landmark.y if landmark.y < min_y else min_y
             max_x = landmark.x if landmark.x > max_x else max_x

@@ -24,10 +24,10 @@ class Gesture:
 
 
 class Result:
-    def __init__(self, gesture1=0, gesture2=0, location_results=None, motion_results=None, shape_results=None):
+    def __init__(self, gesture1=0, gesture2=0, location_results=None, motion_results=None, shape_results=None, face_result=None):
         self.gesture1: int = gesture1
         self.gesture2: int = gesture2
-        self.location_results: list[float] = location_results if location_results is not None else [0.0]
-        self.motion_results: list[float] = motion_results if motion_results is not None else [0.0]
-        self.shape_results: list[float] = shape_results if shape_results is not None else [0.0]
-
+        self.location_results: list[float] = location_results if location_results else [0.0]
+        self.motion_results: list[float] = motion_results if motion_results else [0.0]
+        self.shape_results: list[float] = shape_results if shape_results else [0.0]
+        self.face_result: float = face_result if face_result else 0.0
