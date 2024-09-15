@@ -39,8 +39,8 @@ from structs.types import Result
 
 super_sample_scale = 1
 
-def processRange(start, stop):
-    for i in range(start, stop):
+def process(gesture_indices):
+    for i in gesture_indices:
         print(f"gesture {i} ", end="\r")
         results = []
         clip1 = gestures[i].clips[0]
@@ -83,19 +83,4 @@ def processRange(start, stop):
 
 
 # %%
-processRange(0, 16)
-
-
-# %%
-# multithreading
-# import threading
-#
-# threads = []
-# for idx in range(8):
-#     threads.append(threading.Thread(target=processRange, args=(idx * 2, idx * 2 + 2)))
-#
-# for thread in threads:
-#     thread.start()
-#
-# for thread in threads:
-#     thread.join()
+process(range(0, 16))

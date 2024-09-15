@@ -231,7 +231,7 @@ def testResult(result):
         print("Prediction: Incorrect shape")
         return
 
-    print("Correct gesture")
+    print("Prediction: Correct gesture")
 
 
 # %%
@@ -248,7 +248,7 @@ print(f"Actual    : {'Correct' if result.gesture1 == result.gesture2 else 'Incor
 location_threshold = 0.975
 motion_threshold = 0.50
 shape_threshold = 0.92
-face_threshold = 0.998
+face_threshold = 0.995
 
 def overallConditionWithFace(result, _):
     return (result.location_results[0] < location_threshold
@@ -298,7 +298,7 @@ def testResultWithFace(result):
         print("Prediction: Incorrect face")
         return
 
-    print("Correct gesture")
+    print("Prediction: Correct gesture")
 
 
 # %%

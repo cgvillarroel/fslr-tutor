@@ -10,6 +10,18 @@ if module_path not in sys.path:
 from structs.types import Gesture, Clip
 from structs.functions import euclideanDistance, cosine
 
+
+def extractKeyLandmarks(face_landmarks):
+    return [
+        face_landmarks[336], # left inner upper eyebrow
+        face_landmarks[300], # left outer upper eyebrow
+        face_landmarks[107], # right inner upper eyebrow
+        face_landmarks[70], # right outer upper eyebrow
+        face_landmarks[291], # left outer upper lip
+        face_landmarks[61], # right outer upper lip
+    ]
+
+
 def compareFacesEuclid(clip1: Clip, clip2: Clip):
     error = 0
 
@@ -22,10 +34,10 @@ def compareFacesEuclid(clip1: Clip, clip2: Clip):
 
     # transform into a more manageable structure (array of points)
     for frame in clip1.frames[:interval1 * samples_per_clip:interval1]:
-        samples1.append(frame.pose_landmarks[:11])
+        samples1.append(extractKeyLandmarks(frame.face_landmarks))
 
     for frame in clip2.frames[:interval2 * samples_per_clip:interval2]:
-        samples2.append(frame.pose_landmarks[:11])
+        samples2.append(extractKeyLandmarks(frame.face_landmarks))
 
     # compute total error
     for sample1, sample2 in zip(samples1, samples2):
@@ -45,10 +57,10 @@ def compareFacesCosine(clip1: Clip, clip2: Clip):
 
     # transform into a more manageable structure (array of points)
     for frame in clip1.frames[:interval1 * samples_per_clip:interval1]:
-        _ = [samples1.extend([a.x, a.y]) for a in frame.pose_landmarks[:11]]
+        _ = [samples1.extend([a.x, a.y]) for a in extractKeyLandmarks(frame.face_landmarks)]
 
     for frame in clip2.frames[:interval2 * samples_per_clip:interval2]:
-        _ = [samples2.extend([a.x, a.y]) for a in frame.pose_landmarks[:11]]
+        _ = [samples2.extend([a.x, a.y]) for a in extractKeyLandmarks(frame.face_landmarks)]
 
     return cosine(samples1, samples2)
 
