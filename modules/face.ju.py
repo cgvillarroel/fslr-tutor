@@ -13,12 +13,27 @@ from structs.functions import euclideanDistance, cosine
 
 def extractKeyLandmarks(face_landmarks):
     return [
-        face_landmarks[336], # left inner upper eyebrow
-        face_landmarks[300], # left outer upper eyebrow
-        face_landmarks[107], # right inner upper eyebrow
-        face_landmarks[70], # right outer upper eyebrow
-        face_landmarks[291], # left outer upper lip
-        face_landmarks[61], # right outer upper lip
+        face_landmarks[336], # left inner eyebrow
+        face_landmarks[334], # left middle eyebrow
+        face_landmarks[300], # left outer eyebrow
+
+        face_landmarks[107], # right inner eyebrow
+        face_landmarks[105], # right middle eyebrow
+        face_landmarks[70], # right outer eyebrow
+
+        face_landmarks[386], # left upper eyelid
+        face_landmarks[374], # left lower eyelid
+
+        face_landmarks[159], # right upper eyelid
+        face_landmarks[145], # right lower eyelid
+
+        face_landmarks[291], # left lip
+        face_landmarks[61], # right lip
+
+        face_landmarks[0], # outer upper lip
+        face_landmarks[13], # inner upper lip
+        face_landmarks[14], # inner lower lip
+        face_landmarks[17], # outer lower lip
     ]
 
 
