@@ -126,6 +126,14 @@ test_location = thresholdTesterFactory(locationCondition)
 plotThresholds(test_location, 825, 1000, title="Location thresholds")
 
 
+# %%
+location_threshold = 0.975
+print(f"Threshold: {location_threshold}")
+print("==========")
+confusion_matrix = test_location(results, location_threshold)
+utils.printStats(confusion_matrix)
+
+
 # %% [md]
 # ## Motion
 
@@ -147,6 +155,14 @@ test_motion = thresholdTesterFactory(motionCondition)
 plotThresholds(test_motion, 4900, 5100, 10000, title="Motion thresholds")
 
 
+# %%
+motion_threshold = 0.50
+print(f"Threshold: {motion_threshold}")
+print("==========")
+confusion_matrix = test_motion(results, motion_threshold)
+utils.printStats(confusion_matrix)
+
+
 # %% [md]
 # ## Shape (Cosine Similarity)
 
@@ -161,6 +177,14 @@ test_shape = thresholdTesterFactory(shapeCosineCondition)
 
 # %%
 plotThresholds(test_shape, 800, 1000, title="Shape thresholds")
+
+
+# %%
+shape_threshold = 0.92
+print(f"Threshold: {shape_threshold}")
+print("==========")
+confusion_matrix = test_shape(results, shape_threshold)
+utils.printStats(confusion_matrix)
 
 
 # %% [md]
@@ -179,15 +203,19 @@ test_face = thresholdTesterFactory(faceCosineCondition)
 plotThresholds(test_face, 9900, 10000, 10000, title="Face thresholds")
 
 
+# %%
+face_threshold = 0.995
+print(f"Threshold: {face_threshold}")
+print("==========")
+confusion_matrix = test_face(results, face_threshold)
+utils.printStats(confusion_matrix)
+
+
 # %% [md]
 # # Overall (Without Face)
 
 
 # %%
-location_threshold = 0.975
-motion_threshold = 0.50
-shape_threshold = 0.92
-
 def overallCondition(result, _):
     return (result.location_results[0] < location_threshold
             or result.location_results[1] < location_threshold
@@ -245,11 +273,6 @@ print(f"Actual    : {'Correct' if result.gesture1 == result.gesture2 else 'Incor
 
 
 # %%
-location_threshold = 0.975
-motion_threshold = 0.50
-shape_threshold = 0.92
-face_threshold = 0.995
-
 def overallConditionWithFace(result, _):
     return (result.location_results[0] < location_threshold
             or result.location_results[1] < location_threshold
