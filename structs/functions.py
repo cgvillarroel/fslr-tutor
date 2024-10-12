@@ -1,3 +1,4 @@
+import csv
 import math
 
 def cosine(vec1, vec2):
@@ -41,3 +42,35 @@ def printStats(mat):
     print(f"Precision: {precision(mat)}")
     print(f"Recall   : {recall(mat)}")
     print(f"F1 Score : {f1Score(mat)}")
+
+def importGestureDifferences(file_name: str, count: int):
+    lut = [[{}] * count for _ in range(count)]
+
+    for i in range(count):
+        lut[i][i] = {
+            "location": True,
+            "motion": True,
+            "shape": True,
+            "face": True,
+        }
+
+    with open(file_name, newline="") as file:
+        reader = csv.reader(file)
+        next(reader)
+        for row in reader:
+            gesture1 = int(row[0])
+            gesture2 = int(row[1])
+            lut[gesture1][gesture2] = {
+                "location": row[2] == "Same",
+                "motion": row[3] == "Same",
+                "shape": row[3] == "Same",
+                "face": row[4] == "Same",
+            }
+            lut[gesture2][gesture1] = {
+                "location": row[2] == "Same",
+                "motion": row[3] == "Same",
+                "shape": row[3] == "Same",
+                "face": row[4] == "Same",
+            }
+
+    return lut
