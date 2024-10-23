@@ -21,11 +21,12 @@ def compareHandShapesEuclid(clip1: Clip, clip2: Clip):
     right_samples2 = []
 
     samples_per_clip = 6
+    samples_per_clip += 1
     interval1 = len(clip1.frames) // samples_per_clip
     interval2 = len(clip2.frames) // samples_per_clip
 
     # transform into a more manageable structure (array of points)
-    for frame in clip1.frames[:interval1 * samples_per_clip:interval1]:
+    for frame in clip1.frames[interval1 : interval1 * samples_per_clip : interval1]:
         if (frame.pose_landmarks[15].visibility < 0.9
                 or len(frame.left_hand_landmarks) == 0):
             left_samples1.append([NormalizedLandmark(0.0, 0.0, 0.0)] * 21)
@@ -33,7 +34,7 @@ def compareHandShapesEuclid(clip1: Clip, clip2: Clip):
 
         left_samples1.append(frame.left_hand_landmarks)
 
-    for frame in clip2.frames[:interval2 * samples_per_clip:interval2]:
+    for frame in clip2.frames[interval2 : interval2 * samples_per_clip : interval2]:
         if (frame.pose_landmarks[15].visibility < 0.9
                 or len(frame.left_hand_landmarks) == 0):
             left_samples2.append([NormalizedLandmark(0.0, 0.0, 0.0)] * 21)
@@ -41,7 +42,7 @@ def compareHandShapesEuclid(clip1: Clip, clip2: Clip):
 
         left_samples2.append(frame.left_hand_landmarks)
 
-    for frame in clip1.frames[:interval1 * samples_per_clip:interval1]:
+    for frame in clip1.frames[interval1 : interval1 * samples_per_clip : interval1]:
         if (frame.pose_landmarks[16].visibility < 0.9
                 or len(frame.right_hand_landmarks) == 0):
             right_samples1.append([NormalizedLandmark(0.0, 0.0, 0.0)] * 21)
@@ -49,7 +50,7 @@ def compareHandShapesEuclid(clip1: Clip, clip2: Clip):
 
         right_samples1.append(frame.right_hand_landmarks)
 
-    for frame in clip2.frames[:interval2 * samples_per_clip:interval2]:
+    for frame in clip2.frames[interval2 : interval2 * samples_per_clip : interval2]:
         if (frame.pose_landmarks[16].visibility < 0.9
                 or len(frame.right_hand_landmarks) == 0):
             right_samples2.append([NormalizedLandmark(0.0, 0.0, 0.0)] * 21)
@@ -76,11 +77,12 @@ def compareHandShapesCosine(clip1: Clip, clip2: Clip):
     right_samples2 = []
 
     samples_per_clip = 6
+    samples_per_clip += 1
     interval1 = len(clip1.frames) // samples_per_clip
     interval2 = len(clip2.frames) // samples_per_clip
 
     # transform into a more manageable structure (array of points)
-    for frame in clip1.frames[:interval1 * samples_per_clip:interval1]:
+    for frame in clip1.frames[interval1 : interval1 * samples_per_clip : interval1]:
         if (frame.pose_landmarks[15].visibility < 0.9
                 or len(frame.left_hand_landmarks) == 0):
             left_samples1.extend([1.0, 1.0] * 21)
@@ -88,7 +90,7 @@ def compareHandShapesCosine(clip1: Clip, clip2: Clip):
 
         _ = [left_samples1.extend([a.x, a.y]) for a in frame.left_hand_landmarks]
 
-    for frame in clip2.frames[:interval2 * samples_per_clip:interval2]:
+    for frame in clip2.frames[interval2 : interval2 * samples_per_clip : interval2]:
         if (frame.pose_landmarks[15].visibility < 0.9
                 or len(frame.left_hand_landmarks) == 0):
             left_samples2.extend([1.0, 1.0] * 21)
@@ -96,7 +98,7 @@ def compareHandShapesCosine(clip1: Clip, clip2: Clip):
 
         _ = [left_samples2.extend([a.x, a.y]) for a in frame.left_hand_landmarks]
 
-    for frame in clip1.frames[:interval1 * samples_per_clip:interval1]:
+    for frame in clip1.frames[interval1 : interval1 * samples_per_clip : interval1]:
         if (frame.pose_landmarks[16].visibility < 0.9
                 or len(frame.right_hand_landmarks) == 0):
             right_samples1.extend([1.0, 1.0] * 21)
@@ -104,7 +106,7 @@ def compareHandShapesCosine(clip1: Clip, clip2: Clip):
 
         _ = [right_samples1.extend([a.x, a.y]) for a in frame.right_hand_landmarks]
 
-    for frame in clip2.frames[:interval2 * samples_per_clip:interval2]:
+    for frame in clip2.frames[interval2 : interval2 * samples_per_clip : interval2]:
         if (frame.pose_landmarks[16].visibility < 0.9
                 or len(frame.right_hand_landmarks) == 0):
             right_samples2.extend([1.0, 1.0] * 21)
@@ -130,3 +132,6 @@ if __name__ == "__main__":
 
     print(compareHandShapesCosine(data[0].clips[0], data[0].clips[1]))
     print(compareHandShapesCosine(data[0].clips[0], data[1].clips[0]))
+
+    print(compareHandShapesEuclid(data[0].clips[0], data[0].clips[1]))
+    print(compareHandShapesEuclid(data[0].clips[0], data[1].clips[0]))

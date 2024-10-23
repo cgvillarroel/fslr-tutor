@@ -44,14 +44,15 @@ def compareFacesEuclid(clip1: Clip, clip2: Clip):
     samples2 = []
 
     samples_per_clip = 6
+    samples_per_clip += 1
     interval1 = len(clip1.frames) // samples_per_clip
     interval2 = len(clip2.frames) // samples_per_clip
 
     # transform into a more manageable structure (array of points)
-    for frame in clip1.frames[:interval1 * samples_per_clip:interval1]:
+    for frame in clip1.frames[interval1 : interval1 * samples_per_clip : interval1]:
         samples1.append(extractKeyLandmarks(frame.face_landmarks))
 
-    for frame in clip2.frames[:interval2 * samples_per_clip:interval2]:
+    for frame in clip2.frames[interval2 : interval2 * samples_per_clip : interval2]:
         samples2.append(extractKeyLandmarks(frame.face_landmarks))
 
     # compute total error
@@ -67,14 +68,15 @@ def compareFacesCosine(clip1: Clip, clip2: Clip):
     samples2 = []
 
     samples_per_clip = 6
+    samples_per_clip += 1
     interval1 = len(clip1.frames) // samples_per_clip
     interval2 = len(clip2.frames) // samples_per_clip
 
     # transform into a more manageable structure (array of points)
-    for frame in clip1.frames[:interval1 * samples_per_clip:interval1]:
+    for frame in clip1.frames[interval1 : interval1 * samples_per_clip : interval1]:
         _ = [samples1.extend([a.x, a.y]) for a in extractKeyLandmarks(frame.face_landmarks)]
 
-    for frame in clip2.frames[:interval2 * samples_per_clip:interval2]:
+    for frame in clip2.frames[interval2 : interval2 * samples_per_clip : interval2]:
         _ = [samples2.extend([a.x, a.y]) for a in extractKeyLandmarks(frame.face_landmarks)]
 
     return cosine(samples1, samples2)
@@ -95,3 +97,6 @@ if __name__ == "__main__":
 
     print(compareFacesCosine(data[0].clips[0], data[0].clips[1]))
     print(compareFacesCosine(data[0].clips[0], data[1].clips[0]))
+
+    print(compareFacesEuclid(data[0].clips[0], data[0].clips[1]))
+    print(compareFacesEuclid(data[0].clips[0], data[1].clips[0]))

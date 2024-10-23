@@ -11,6 +11,8 @@ if module_path not in sys.path:
 import numpy as np
 
 # https://github.com/kamperh/lecture_dtw_notebook/blob/main/dtw.ipynb
+
+
 def dtw(x, y, cost):
     N = x.shape[0]
     M = y.shape[0]
@@ -81,14 +83,46 @@ def cost_function_generator(landmark_idx):
 
 
 # %%
-def compareMotions(clip1, clip2):
-    series1 = clip1.frames
-    series2 = clip2.frames
+def compareMotions(series1, series2):
+    delta_length = len(series2) - len(series1)
+    if delta_length < 0:
+        delta_length = abs(delta_length)
+        series1 = series1[delta_length // 2: -delta_length // 2]
+    elif delta_length > 0:
+        delta_length = abs(delta_length)
+        series2 = series2[delta_length // 2: -delta_length // 2]
+
     results = []
     for i in range(11, 17):
         results.append(dtw(np.array(series1), np.array(series2), cost_function_generator(i))[1])
 
     return results
+
+# %%
+
+
+def compareMotionsSegmented(series1, series2):
+    delta_length = len(series2) - len(series1)
+    if delta_length < 0:
+        delta_length = abs(delta_length)
+        series1 = series1[delta_length // 2: -delta_length // 2]
+    elif delta_length > 0:
+        delta_length = abs(delta_length)
+        series2 = series2[delta_length // 2: -delta_length // 2]
+
+    segments = 6
+    interval = len(series1) // segments
+
+    overall_result = [0] * 6
+    for i in range(segments):
+        segment1 = series1[i * interval: (i + 1) * interval]
+        segment2 = series2[i * interval: (i + 1) * interval]
+        segment_results = compareMotions(segment1, segment2)
+
+        for key, result in enumerate(segment_results):
+            overall_result[key] = result
+
+    return overall_result
 
 
 # %%
@@ -104,5 +138,8 @@ if __name__ == "__main__":
     with open("../dataset/gestures/6.pkl", "rb") as reader:
         data.append(pickle.load(reader))
 
-    print(compareMotions(data[0].clips[0], data[0].clips[1]))
-    print(compareMotions(data[0].clips[0], data[1].clips[0]))
+    print(compareMotions(data[0].clips[0].frames, data[0].clips[1].frames))
+    print(compareMotions(data[0].clips[0].frames, data[1].clips[0].frames))
+
+    print(compareMotionsSegmented(data[0].clips[0].frames, data[0].clips[1].frames))
+    print(compareMotionsSegmented(data[0].clips[0].frames, data[1].clips[0].frames))
