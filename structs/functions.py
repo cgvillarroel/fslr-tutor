@@ -26,45 +26,8 @@ def euclideanDistance(point1, point2):
     return math.sqrt((x ** 2) + (y ** 2))
 
 
-def accuracy(mat):
-    return (mat[0] + mat[1]) / sum(mat)
-
-
-def precision(mat):
-    all_positive = mat[0] + mat[2]
-    return mat[0] / all_positive if all_positive > 0 else 0
-
-
-def recall(mat):
-    all_true = mat[0] + mat[1]
-    return mat[0] / all_true if all_true > 0 else 0
-
-
-def f1Score(mat):
-    denominator = (2 * mat[0] + mat[2] + mat[3])
-    return (2 * mat[0]) / denominator if denominator > 0 else 0
-
-
-def printStats(mat):
-    print(f"TP: {mat[0]}\t FN: {mat[3]}")
-    print(f"FP: {mat[2]}\t TN: {mat[1]}\n")
-
-    print(f"Accuracy : {accuracy(mat)}")
-    print(f"Precision: {precision(mat)}")
-    print(f"Recall   : {recall(mat)}")
-    print(f"F1 Score : {f1Score(mat)}")
-
-
 def importGestureDifferences(file_name: str, count: int):
-    lut = [[{}] * count for _ in range(count)]
-
-    for i in range(count):
-        lut[i][i] = {
-            "location": True,
-            "motion": True,
-            "shape": True,
-            "face": True,
-        }
+    lut = [[0] * count for _ in range(count)]
 
     with open(file_name, newline="") as file:
         reader = csv.reader(file)
@@ -72,18 +35,13 @@ def importGestureDifferences(file_name: str, count: int):
         for row in reader:
             gesture1 = int(row[0])
             gesture2 = int(row[1])
-            lut[gesture1][gesture2] = {
-                "location": row[2] == "Same",
-                "motion": row[3] == "Same",
-                "shape": row[3] == "Same",
-                "face": row[4] == "Same",
-            }
-            lut[gesture2][gesture1] = {
-                "location": row[2] == "Same",
-                "motion": row[3] == "Same",
-                "shape": row[3] == "Same",
-                "face": row[4] == "Same",
-            }
+
+            for idx, cell in enumerate(row[2:]):
+                if (cell == "Different"):
+                    lut[gesture1][gesture2] = idx + 1
+                    lut[gesture2][gesture1] = idx + 1
+
+                    break
 
     return lut
 
@@ -121,7 +79,7 @@ def train_test_folds(x: list, y: list, fold_count: int):
 # %%
 
 
-def test_location(result: Result, thresholds: dict[str, float]):
+def test_location(result: Result, thresholds: dict[str, float]) -> bool:
     return (
         result.location_results[0] >= thresholds["location"]
         and result.location_results[1] >= thresholds["location"]
@@ -130,7 +88,7 @@ def test_location(result: Result, thresholds: dict[str, float]):
 # %%
 
 
-def test_motion(result: Result, thresholds: dict[str, float]):
+def test_motion(result: Result, thresholds: dict[str, float]) -> bool:
     return (
         result.motion_results[0] <= thresholds["motion_shoulder"]
         and result.motion_results[1] <= thresholds["motion_shoulder"]
@@ -143,7 +101,7 @@ def test_motion(result: Result, thresholds: dict[str, float]):
 # %%
 
 
-def test_shape(result: Result, thresholds: dict[str, float]):
+def test_shape(result: Result, thresholds: dict[str, float]) -> bool:
     return (
         result.shape_results[0] >= thresholds["shape"]
         and result.shape_results[1] >= thresholds["shape"]
@@ -152,7 +110,7 @@ def test_shape(result: Result, thresholds: dict[str, float]):
 # %%
 
 
-def test_face(result: Result, thresholds: dict[str, float]):
+def test_face(result: Result, thresholds: dict[str, float]) -> bool:
     return result.face_result >= thresholds["face"]
 
 # %% [md]
@@ -160,13 +118,51 @@ def test_face(result: Result, thresholds: dict[str, float]):
 # %%
 
 
-def test_with_face_binary(result: Result, thresholds: dict[str, float]):
+def test_with_face_binary(result: Result, thresholds: dict[str, float]) -> bool:
     return (
         test_location(result, thresholds)
         and test_motion(result, thresholds)
         and test_shape(result, thresholds)
         and test_face(result, thresholds)
     )
+
+
+def test_without_face_binary(result: Result, thresholds: dict[str, float]) -> bool:
+    return (
+        test_location(result, thresholds)
+        and test_motion(result, thresholds)
+        and test_shape(result, thresholds)
+    )
+
+
+def test_with_face_multiclass(result: Result, thresholds: dict[str, float]) -> int:
+    if (not test_location(result, thresholds)):
+        return 1
+
+    if (not test_motion(result, thresholds)):
+        return 2
+
+    if (not test_shape(result, thresholds)):
+        return 3
+
+    if (not test_face(result, thresholds)):
+        return 4
+
+    return 0
+
+
+def test_without_face_multiclass(result: Result, thresholds: dict[str, float]) -> int:
+    if (not test_location(result, thresholds)):
+        return 1
+
+    if (not test_motion(result, thresholds)):
+        return 2
+
+    if (not test_shape(result, thresholds)):
+        return 3
+
+    return 0
+
 
 # %% [md]
 # ## Finding thresholds
@@ -175,12 +171,13 @@ def test_with_face_binary(result: Result, thresholds: dict[str, float]):
 
 def plot_thresholds(
         threshold_name: str,
+        title: str,
         iterator: range,
         test_function: Callable,
         x_values: list[Result],
         y_values: list[Result],
         other_thresholds: dict[str, float] = {},
-        scale=1000):
+        scale=1000) -> None:
     accuracy_scores = []
     precision_scores = []
     recall_scores = []
@@ -213,24 +210,59 @@ def plot_thresholds(
     plt.plot(thresholds, recall_scores, color="b", label="recall")
     plt.plot(thresholds, f1_scores, color="y", label="f1 score")
 
+    plt.title(title)
+    plt.legend()
+    plt.show()
 
-def test_thresholds(
-        x_values: list[float],
-        y_values: list[float],
+
+def test_thresholds_binary(
+        title: str,
+        x_values: list[Result],
+        y_values: list[int],
         thresholds: dict[str, float],
-        test_function: Callable):
+        test_function: Callable) -> None:
     y_pred = [test_function(x, thresholds) for x in x_values]
     confusion_matrix = metrics.confusion_matrix(y_values, y_pred)
 
     cm_plot = metrics.ConfusionMatrixDisplay(
         confusion_matrix=confusion_matrix,
         display_labels=[
-            "Incorrect/Different Gesture",
-            "Correct/Same Gesture",
+            "Different Gesture",
+            "Same Gesture",
         ])
+
     cm_plot.plot()
+    cm_plot.ax_.set_title(title)
 
     print(f"Accuracy : {metrics.accuracy_score(y_values, y_pred)}")
     print(f"Precision: {metrics.precision_score(y_values, y_pred, zero_division=0.0)}")
     print(f"Recall   : {metrics.recall_score(y_values, y_pred, zero_division=0.0)}")
     print(f"F1 Score : {metrics.f1_score(y_values, y_pred, zero_division=0.0)}")
+
+
+def test_thresholds_multiclass(
+        title: str,
+        x_values: list[Result],
+        y_values: list[int],
+        thresholds: dict[str, float],
+        test_function: Callable) -> None:
+    y_pred = [test_function(x, thresholds) for x in x_values]
+    confusion_matrix = metrics.confusion_matrix(y_values, y_pred, labels=[i for i in range(5)])
+
+    cm_plot = metrics.ConfusionMatrixDisplay(
+        confusion_matrix,
+        display_labels=[
+            "Same Gesture",
+            "Different Hand Location",
+            "Different Arm Motion",
+            "Different Hand Shape",
+            "Different Face",
+        ])
+
+    cm_plot.plot(xticks_rotation="vertical")
+    cm_plot.ax_.set_title(title)
+
+    # print(f"Accuracy : {metrics.balanced_accuracy_score(y_values, y_pred)}")
+    # print(f"Precision: {metrics.average_precision_score(y_values, y_pred)}")
+    # print(f"Recall   : {metrics.recall_score(y_values, y_pred, zero_division=0.0)}")
+    # print(f"F1 Score : {metrics.average_f1_score(y_values, y_pred, zero_division=0.0)}")
