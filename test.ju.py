@@ -87,8 +87,8 @@ utils.test_thresholds_binary(
 utils.plot_thresholds(
     threshold_name="motion_shoulder",
     title="Shoulder thresholds for motion module Only",
-    iterator=range(500),
-    scale=1,
+    iterator=range(490,510),
+    scale=1000,
     test_function=utils.test_motion,
     x_values=x_train_folds[1],
     y_values=y_train_folds[1],
@@ -118,7 +118,7 @@ utils.test_thresholds_binary(
 utils.plot_thresholds(
     threshold_name="motion_elbow",
     title="Elbow thresholds for motion module only",
-    iterator=range(4900, 5100),
+    iterator=range(490,510),
     scale=1000,
     test_function=utils.test_motion,
     x_values=x_train_folds[2],
@@ -149,7 +149,7 @@ utils.test_thresholds_binary(
 utils.plot_thresholds(
     threshold_name="motion_wrist",
     title="Wrist thresholds for motion module only",
-    iterator=range(4900, 5100),
+    iterator=range(490, 510),
     scale=1000,
     test_function=utils.test_motion,
     x_values=x_train_folds[3],
@@ -265,7 +265,7 @@ utils.test_thresholds_binary(
 utils.plot_thresholds(
     threshold_name="motion_shoulder",
     title="Shoulder thresholds with all modules",
-    iterator=range(4900, 5100),
+    iterator=range(490, 510),
     scale=1000,
     test_function=utils.test_with_face_binary,
     x_values=x_train_folds[7],
@@ -302,7 +302,7 @@ utils.test_thresholds_binary(
 utils.plot_thresholds(
     threshold_name="motion_elbow",
     title="Elbow thresholds with all modules",
-    iterator=range(4900, 5100),
+    iterator=range(490, 510),
     scale=1000,
     test_function=utils.test_with_face_binary,
     x_values=x_train_folds[8],
@@ -339,7 +339,7 @@ utils.test_thresholds_binary(
 utils.plot_thresholds(
     threshold_name="motion_wrist",
     title="Wrist thresholds with all modules",
-    iterator=range(4900, 5100),
+    iterator=range(490, 510),
     scale=1000,
     test_function=utils.test_with_face_binary,
     x_values=x_train_folds[9],
